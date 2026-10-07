@@ -1,0 +1,283 @@
+:root {
+  --forest: #228b22; /* forest green */
+  --forest-deep: #14532d;
+  --forest-dark: #0f3d21;
+  --cream: #f4ecd8;
+  --cream-dim: #d9cfb4;
+  --wood: #5b3a1e;
+  --wood-dark: #3b2a1a;
+  --sun: #f6d98a;
+
+  --display: 'Rockwell', 'Roboto Slab', 'Bitter', Georgia, 'Times New Roman', serif;
+  --body: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--forest-deep);
+  color: var(--cream);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+p,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Scene ---------- */
+
+.scene {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 2rem 1rem 1.5rem;
+  overflow: hidden;
+  background: linear-gradient(#f8e7b9 0%, #f4ecd8 35%, #cfe0c3 70%, #a9c4a4 100%);
+}
+
+.landscape {
+  position: absolute;
+  inset: auto 0 0 0;
+  width: 100%;
+  height: 70%;
+  pointer-events: none;
+}
+
+/* ---------- Park sign ---------- */
+
+.sign {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 34rem);
+  padding: 0.6rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(160deg, var(--wood) 0%, var(--wood-dark) 100%);
+  box-shadow:
+    0 1.5rem 3rem rgb(15 61 33 / 0.45),
+    inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+.sign__inner {
+  padding: 2rem 1.5rem 1.75rem;
+  border: 3px solid var(--cream);
+  border-radius: 0.7rem;
+  background: var(--forest);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(0 0 0 / 0.14));
+  text-align: center;
+}
+
+.sign__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.uvu-mark {
+  width: 5rem;
+  height: 5rem;
+}
+
+.uvu-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.uvu-mark__shield {
+  fill: var(--forest-deep);
+  stroke: var(--cream);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.uvu-mark__peaks {
+  fill: var(--cream);
+}
+
+.uvu-mark text {
+  fill: var(--cream);
+  font-family: var(--display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.sign__university {
+  font-family: var(--display);
+  font-size: clamp(1.15rem, 4.6vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sign__est {
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+}
+
+.sign__rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  color: var(--cream);
+  font-size: 0.7rem;
+}
+
+.sign__rule::before,
+.sign__rule::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: var(--cream);
+  opacity: 0.7;
+}
+
+.sign__name {
+  font-family: var(--display);
+  font-size: clamp(1.7rem, 7.5vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 0.25);
+}
+
+.sign__id {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: var(--forest-deep);
+}
+
+.sign__id span {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+}
+
+.sign__id strong {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+}
+
+.sign__section {
+  margin-top: 1.5rem;
+}
+
+.sign__section h2 {
+  margin-bottom: 0.5rem;
+  font-family: var(--body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--sun);
+}
+
+.sign__major {
+  font-family: var(--display);
+  font-size: clamp(1.05rem, 4.2vw, 1.3rem);
+}
+
+/* ---------- Education trail ---------- */
+
+.trail {
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.trail__step {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px dashed rgb(244 236 216 / 0.6);
+  border-radius: 0.5rem;
+  background: rgb(15 61 33 / 0.35);
+}
+
+.trail__step.is-done {
+  border-style: solid;
+}
+
+.trail__marker {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--sun);
+  color: var(--forest-dark);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.trail__step.is-done .trail__marker {
+  background: var(--cream);
+}
+
+.trail__degree {
+  font-family: var(--display);
+  font-size: 1.05rem;
+}
+
+.trail__status {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  white-space: nowrap;
+}
+
+/* ---------- Footer ---------- */
+
+.credit {
+  position: relative;
+  z-index: 1;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+@media (max-width: 380px) {
+  .sign__inner {
+    padding: 1.5rem 1rem 1.25rem;
+  }
+
+  .trail__step {
+    grid-template-columns: auto 1fr;
+  }
+
+  .trail__status {
+    grid-column: 2;
+  }
+}
