@@ -1,0 +1,137 @@
+{
+  "albums": [
+    {
+      "id": "landscapes-oregon-washington",
+      "group": "Landscapes",
+      "name": "Oregon/Washington",
+      "photos": [
+        {
+          "src": "/photos/landscapes/oregon-washington/img-0954.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-0954-thumb.jpg",
+          "file": "IMG_0954.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-06-30",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1001.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1001-thumb.jpg",
+          "file": "IMG_1001.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-06-30",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1012.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1012-thumb.jpg",
+          "file": "IMG_1012.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-06-30",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1074.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1074-thumb.jpg",
+          "file": "IMG_1074.jpg",
+          "width": 1440,
+          "height": 2560,
+          "taken": "2026-07-01",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1087.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1087-thumb.jpg",
+          "file": "IMG_1087.jpg",
+          "width": 1440,
+          "height": 2560,
+          "taken": "2026-07-01",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1089.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1089-thumb.jpg",
+          "file": "IMG_1089.jpg",
+          "width": 1440,
+          "height": 2560,
+          "taken": "2026-07-01",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1095.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1095-thumb.jpg",
+          "file": "IMG_1095.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-07-01",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1099.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1099-thumb.jpg",
+          "file": "IMG_1099.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-07-01",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1100.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1100-thumb.jpg",
+          "file": "IMG_1100.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-07-01",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1106.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1106-thumb.jpg",
+          "file": "IMG_1106.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-07-01",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1176.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1176-thumb.jpg",
+          "file": "IMG_1176.jpg",
+          "width": 1440,
+          "height": 2560,
+          "taken": "2026-07-06",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1186.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1186-thumb.jpg",
+          "file": "IMG_1186.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-07-06",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1211.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1211-thumb.jpg",
+          "file": "IMG_1211.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-07-06",
+          "caption": ""
+        },
+        {
+          "src": "/photos/landscapes/oregon-washington/img-1212.jpg",
+          "thumb": "/photos/landscapes/oregon-washington/img-1212-thumb.jpg",
+          "file": "IMG_1212.jpg",
+          "width": 2560,
+          "height": 1440,
+          "taken": "2026-07-06",
+          "caption": ""
+        }
+      ]
+    }
+  ]
+}

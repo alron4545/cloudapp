@@ -1,0 +1,96 @@
+# Grafana-managed alert rules. They show up under Alerting > Alert rules.
+# To get notified (email, Discord, Slack...), add a contact point in the UI.
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: site-traffic
+    folder: Site Alerts
+    interval: 1m
+    rules:
+      - uid: download-spike
+        title: Download spike
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: loki
+            model:
+              refId: A
+              queryType: instant
+              expr: 'sum(count_over_time({service="web"} | json | __error__="" | path=~"/download/.*" | status < 400 [10m]))'
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [20] }
+        noDataState: OK
+        execErrState: Error
+        for: 0m
+        labels: { severity: info }
+        annotations:
+          summary: More than 20 photo downloads in the last 10 minutes.
+
+      - uid: server-errors
+        title: Server errors (5xx)
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: loki
+            model:
+              refId: A
+              queryType: instant
+              expr: 'sum(count_over_time({service="web"} | json | __error__="" | status >= 500 [5m]))'
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        noDataState: OK
+        execErrState: Error
+        for: 0m
+        labels: { severity: critical }
+        annotations:
+          summary: nginx returned a 5xx error in the last 5 minutes.
+
+      - uid: not-found-burst
+        title: Burst of 404s (possible scanning)
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: loki
+            model:
+              refId: A
+              queryType: instant
+              expr: 'sum(count_over_time({service="web"} | json | __error__="" | status = 404 [5m]))'
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [30] }
+        noDataState: OK
+        execErrState: Error
+        for: 0m
+        labels: { severity: warning }
+        annotations:
+          summary: More than 30 requests for missing files in 5 minutes, often a bot probing for vulnerabilities.

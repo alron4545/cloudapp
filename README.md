@@ -1,8 +1,8 @@
 # Cloud App — Michael James Schuler
 
 A small React application built for a Utah Valley University Cloud Computing
-assignment. It displays a national-park-style "trail sign" with my student
-information and is packaged as a Docker container so it can be deployed to any
+assignment. It is a national-park-themed personal site with a header that links
+to five pages, and it is packaged as a Docker container so it can be deployed to any
 cloud platform that runs containers.
 
 ## What it shows
@@ -10,14 +10,25 @@ cloud platform that runs containers.
 | Field      | Value                                              |
 | ---------- | -------------------------------------------------- |
 | Name       | Michael James Schuler                              |
-| Student ID | 10866702                                           |
 | University | Utah Valley University                             |
 | Major      | Information Systems and Technology                 |
 | Education  | Associate Degree (completed), Bachelor's (in progress) |
 
+## Pages
+
+| Path           | Page        | Content                                       |
+| -------------- | ----------- | --------------------------------------------- |
+| `/`            | Home        | Park-sign card with name, ID, major, degrees  |
+| `/about`       | About Me    | Short bio and quick facts                     |
+| `/assignments` | Assignments | Cards for each class assignment               |
+| `/assignments/<slug>` | Write-up | Full write-up for one assignment        |
+| `/photos`      | Photos      | Photo gallery                                 |
+| `/other`       | Other       | Interests, skills, contact                    |
+
 ## Tech stack
 
 - **React 19** + **Vite** for the front end
+- **React Router** for the pages
 - **nginx** (Alpine) to serve the production build
 - **Docker** multi-stage build (Node builds the app, nginx serves it)
 
@@ -30,16 +41,29 @@ text-based mark, not the official UVU logo.
 ```
 .
 ├── Dockerfile          # multi-stage build: node -> nginx
-├── nginx.conf          # static hosting, SPA fallback, /healthz
+├── docker-compose.yml  # site + Grafana, Loki, Alloy
+├── .env.example        # Grafana admin login (copy to .env)
+├── monitoring/         # Loki, Alloy, Grafana config + dashboard
+├── nginx.conf          # static hosting, JSON logs, downloads, /healthz
 ├── index.html          # Vite entry page
+├── photos-src/         # original photos (not in git or Docker)
+├── scripts/
+│   └── process_photos.py
 ├── package.json
 ├── vite.config.js
 ├── public/
-│   └── favicon.svg
+│   ├── favicon.svg
+│   └── photos/         # generated web copies (npm run photos)
 └── src/
-    ├── main.jsx        # React entry point
-    ├── App.jsx         # page content (edit student info here)
-    └── App.css         # forest green / national park styling
+    ├── main.jsx        # React entry point + router
+    ├── App.jsx         # route table
+    ├── App.css         # forest green / national park styling
+    ├── data/
+    │   ├── student.js      # personal info
+    │   ├── photos.json     # generated photo list + captions
+    │   └── assignments.js  # assignment cards + write-ups
+    ├── components/     # Layout (header/nav), Landscape, UvuMark, Panel
+    └── pages/          # Home, About, Assignments, AssignmentDetail, Photos, Other, NotFound
 ```
 
 ## Run locally (without Docker)
@@ -82,6 +106,21 @@ Stop and remove it:
 docker rm -f cloudapp
 ```
 
+## Run with monitoring (Grafana + Loki)
+
+`docker-compose.yml` runs the site together with Grafana, Loki, and Grafana
+Alloy, which collect nginx's access logs and show page traffic and photo
+downloads on a dashboard:
+
+```bash
+cp .env.example .env          # set GRAFANA_ADMIN_PASSWORD
+docker compose up -d --build
+```
+
+The site is on port 8080 as before. Grafana is only reachable from the server
+itself (use an SSH tunnel). Full setup, queries, alerts, and security notes are
+in [monitoring/README.md](monitoring/README.md).
+
 ## Deploying to the cloud
 
 The container listens on **port 80** and exposes a health check at `/healthz`
@@ -109,9 +148,49 @@ Google Cloud Run, etc.):
 
 ## Customizing
 
-All displayed information lives in the `student` object at the top of
-`src/App.jsx`. Colors are CSS variables at the top of `src/App.css`
-(`--forest` is forest green, `#228b22`).
+Personal info lives in `src/data/student.js` (`student`: name, ID, major,
+degrees).
+
+Assignments live in `src/data/assignments.js`. Each one has a `slug` (its URL,
+`/assignments/<slug>`) and a list of `sections`. A section has a `title`, a
+`guide` checklist (shown until the section has a paragraph), and `blocks` of
+content: paragraphs, lists, steps, code, images, tables, problem/solution pairs,
+and links. The block types are documented at the top of the file. Empty code,
+image, and table blocks show as placeholders. Screenshots go in
+`public/assignments/<slug>/`.
+
+### Photos
+
+Original photos go in `photos-src/`, one folder per album (subfolders are
+fine, e.g. `photos-src/Landscapes/Oregon:Washington/`). Then run:
+
+```bash
+npm run photos
+```
+
+This runs `scripts/process_photos.py` (needs Python 3 with Pillow:
+`python3 -m pip install Pillow`), which writes to `public/photos/`:
+
+- a full-size copy of each photo (long edge capped at 2560 px) for the
+  Download button
+- a small thumbnail for the gallery grid
+
+and lists everything in `src/data/photos.json`. The copies are re-encoded
+**without EXIF metadata**, so the GPS location and camera details in phone
+photos are not published. `photos-src/` is excluded from git and from the Docker
+image, so the originals never leave your machine.
+
+To add captions, edit the `caption` fields in `src/data/photos.json`. They are
+kept the next time the script runs. Photos without a caption show the date they
+were taken.
+
+The Other page has placeholder text to replace in `src/pages/Other.jsx`.
+
+Page links work when visited directly (for example `/photos`) because
+`nginx.conf` sends unknown paths back to `index.html`.
+
+Colors are CSS variables at the top of `src/App.css` (`--forest` is forest
+green, `#228b22`).
 
 ## Author
 

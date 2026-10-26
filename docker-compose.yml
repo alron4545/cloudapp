@@ -1,0 +1,74 @@
+# The personal site plus its monitoring stack.
+#
+#   web     - this React site served by nginx (public, port 8080)
+#   alloy   - reads container logs from Docker and ships them to Loki
+#   loki    - stores and indexes the logs (internal only, no published port)
+#   grafana - dashboards and alerts (bound to 127.0.0.1 only; reach it over
+#             an SSH tunnel)
+#
+# Usage:
+#   cp .env.example .env   # then set a real Grafana password
+#   docker compose up -d --build
+
+name: personalapp
+
+services:
+  web:
+    build: .
+    image: personalapp:1.0
+    container_name: personalapp
+    ports:
+      - "8080:80"
+    labels:
+      # Alloy only collects logs from containers with this label.
+      logging: alloy
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.5.0
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./monitoring/loki/config.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/loki
+    restart: unless-stopped
+
+  alloy:
+    image: grafana/alloy:v1.8.0
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      # Read-only access to the Docker API to discover containers and read
+      # their logs. See the security notes in monitoring/README.md.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy/data
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:12.0.0
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+volumes:
+  loki-data:
+  alloy-data:
+  grafana-data:
