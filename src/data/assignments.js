@@ -102,7 +102,16 @@ export const assignments = [
           'Briefly introduce the application being monitored (this React site, served by nginx in Docker on EC2).',
           'Why monitoring and observability matter for this application.',
         ],
-        blocks: [],
+        blocks: [
+          {
+            type: 'p',
+            text: "My web application is a personal website with a national park theme. It has a home page with my name, major, and degree progress, plus pages for my assignments, an about me section, and a photo gallery of landscape pictures I took in Oregon and Washington. Visitors can view the photos and download them.",
+          },
+          {
+            type: 'p',
+            text: "The site is built with React and served by nginx inside a Docker container on an Ubuntu EC2 instance in AWS. Before adding monitoring, I had no way to know who was visiting, which photos people were downloading, or if something was going wrong. Monitoring gives me that visibility: I can see page traffic and downloads, catch errors, and notice when bots are probing the site for weaknesses.",
+          },
+        ],
       },
       {
         title: 'Why I Chose This Tool',
