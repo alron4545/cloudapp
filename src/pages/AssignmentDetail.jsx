@@ -107,6 +107,20 @@ function Block({ block }) {
         </div>
       )
 
+    case 'questions':
+      return (
+        <ol className="writeup__questions">
+          {block.items.map((item, i) => (
+            <li key={item.q}>
+              <h3>
+                <span className="writeup__q-num">{i + 1}.</span> {item.q}
+              </h3>
+              {item.a ? <p>{item.a}</p> : <Empty>Answer goes here.</Empty>}
+            </li>
+          ))}
+        </ol>
+      )
+
     case 'qa':
       return (
         <ul className="writeup__challenges">
@@ -144,7 +158,14 @@ function Block({ block }) {
 function Section({ section, id, number }) {
   const blocks = section.blocks ?? []
   const guide = section.guide ?? []
-  const hasText = blocks.some((b) => b.type === 'p' && b.text)
+  // The checklist hides once the section has writing, a real screenshot, code, or links.
+  const hasText = blocks.some(
+    (b) =>
+      (b.type === 'p' && b.text) ||
+      (b.type === 'image' && b.src) ||
+      (b.type === 'code' && b.code) ||
+      (b.type === 'links' && b.items.length > 0),
+  )
   const hasContent = blocks.some((b) => b.type !== 'p' && b.type !== 'links') ||
     blocks.some((b) => b.type === 'links' && b.items.length > 0)
 

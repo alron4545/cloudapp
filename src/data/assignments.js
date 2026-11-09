@@ -11,7 +11,8 @@ import lokiConfig from '../../monitoring/loki/config.yaml?raw'
 // A write-up is a list of sections. Each section has:
 //   title   - heading shown on the page (and in the table of contents)
 //   guide   - checklist of what the section should cover; shown until the
-//             section has at least one paragraph ({ type: 'p' })
+//             section has a paragraph, an image with a src, filled-in code,
+//             or at least one link
 //   blocks  - the content, rendered in order. Block types:
 //     { type: 'p', text: '...' }
 //     { type: 'list', items: ['...'] }
@@ -20,6 +21,7 @@ import lokiConfig from '../../monitoring/loki/config.yaml?raw'
 //     { type: 'image', src: '/assignments/<slug>/file.png', caption: '...' }
 //     { type: 'table', headers: ['...'], rows: [['...']] }
 //     { type: 'qa', items: [{ problem, solution }] }
+//     { type: 'questions', items: [{ q: 'Question?', a: 'Answer.' }] }
 //     { type: 'links', items: [{ label, url }] }
 //   Blocks left empty (no code, no src, blank cells) show as placeholders.
 //
@@ -91,7 +93,7 @@ export const assignments = [
     title: 'Monitoring & Observability with Grafana + Loki',
     course: 'Cloud Computing',
     term: 'Fall 2026',
-    status: 'In Progress',
+    status: 'Completed',
     description:
       'Added log-based monitoring to my containerized site on AWS with Grafana, Loki, and Grafana Alloy, tracking page traffic and photo downloads.',
     tags: ['Grafana', 'Loki', 'Grafana Alloy', 'nginx', 'Docker', 'AWS EC2'],
@@ -369,6 +371,111 @@ docker compose logs alloy --tail 20`,
           {
             type: 'p',
             text: 'I used AI (Claude, by Anthropic) to help with the formatting, design, and research for this project. This includes organizing and formatting this blog post, designing the look of the website, and researching monitoring tools and how Grafana, Loki, and Alloy work.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'terraform-iac',
+    title: 'Infrastructure as Code with Terraform',
+    course: 'Cloud Computing',
+    term: 'Fall 2026',
+    status: 'In Progress',
+    description:
+      'Created and destroyed an AWS S3 bucket with Terraform, then reflected on how Infrastructure as Code compares to creating resources by hand.',
+    tags: ['Terraform', 'Infrastructure as Code', 'AWS', 'S3'],
+    sections: [
+      {
+        title: 'Overview',
+        guide: [
+          'Which cloud provider and resource this lab uses.',
+          'A sentence or two on what Terraform does in this lab.',
+        ],
+        blocks: [],
+      },
+      {
+        title: 'Terraform Configuration',
+        guide: [
+          'Your main.tf and any other files needed to reproduce the deployment.',
+          'Do not include credentials, secrets, or state files (terraform.tfstate, .terraform/).',
+        ],
+        blocks: [
+          { type: 'code', label: 'main.tf', code: "terraform {\n\n\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \"~> 6.0\"\n    }\n  }\n}\n\nprovider \"aws\" {\n  region = \"us-east-2\"\n}\n\nresource \"aws_s3_bucket\" \"student\" {\n  bucket = \"utahcal12781278\"\n}\n\nresource \"aws_s3_bucket_public_access_block\" \"student\" {\n  bucket = aws_s3_bucket.student.id\n\n  block_public_acls       = true\n  block_public_policy     = true\n  ignore_public_acls      = true\n  restrict_public_buckets = true\n}\n\noutput \"bucket_name\" {\n  value = aws_s3_bucket.student.bucket\n}" },
+          { type: 'code', label: 'Commands used', code: "terraform init      # download the AWS provider\nterraform plan      # preview what will be created\nterraform apply     # create the bucket (type yes to confirm)\nterraform destroy   # delete everything (type yes to confirm)" },
+        ],
+      },
+      {
+        title: 'Screenshots',
+        guide: ['Evidence of the resource after creation and after destruction.'],
+        blocks: [
+          {
+            type: 'image',
+            src: '/assignments/terraform-iac/terraform-apply.webp',
+            caption: 'terraform apply creating the S3 bucket utahcal12781278 and its public access block (2 resources added).',
+          },
+          {
+            type: 'image',
+            src: '/assignments/terraform-iac/s3-bucket-created.webp',
+            caption: 'The new bucket in the AWS S3 console, in US East (Ohio) us-east-2.',
+          },
+          {
+            type: 'image',
+            src: '/assignments/terraform-iac/terraform-destroy.png',
+            caption: 'terraform destroy removing both resources (2 destroyed).',
+          },
+        ],
+      },
+      {
+        title: 'Reflection',
+        guide: [],
+        blocks: [
+          {
+            type: 'questions',
+            items: [
+              {
+                q: 'Which cloud provider did you choose, and why?',
+                a: "I chose to use AWS as that is the provider I am most familiar with.",
+              },
+              {
+                q: 'What resource did you create?',
+                a: "For the assignment, I created a S3 bucket which is a storage container for data objects.",
+              },
+              {
+                q: 'What does the provider block do in Terraform?',
+                a: "In Terraform, the provider block acts almost as an API that allows it to connect to external cloud providers such as AWS, or Azure.",
+              },
+              {
+                q: 'What is the purpose of the resource block?',
+                a: "The resource block is the most fundamental data in the terraforms config file. It specifies what resource it needs to create, its name, as well as additional arguments it might need in order to make the resource.",
+              },
+              {
+                q: 'Why should you review terraform plan before running terraform apply?',
+                a: "Terraform plan allows users to see what changes will be implemented once it runs. It’s a final check type command that lets the user verify everything is correct, before deploying.",
+              },
+              {
+                q: 'What happened when you ran terraform destroy?',
+                a: "When I ran the terraform destroy command, it asked me to verify I really want to destroy the resource. To do so, I had to type in “Yes” into the command line.",
+              },
+              {
+                q: 'What error or challenge did you encounter, if any, and how did you troubleshoot it?',
+                a: "I ran into 2 technical issues when doing this lab. This first was an AWS issue involving the CLI. I selected a region that was not compatible with my plan, so an error was thrown. This was easily fixed by changing the region to match my region I had on my account. The 2nd issue I ran into was when I ran the terraform init command. Line 2 had 3 symbols that were invalid. Specifically, line 2 had 3 backticks which threw an error. I deleted these backticks, and ran the command again. After this small hurdle, the rest of the lab went smoothly.",
+              },
+              {
+                q: 'What is one benefit of using Infrastructure as Code instead of manually creating cloud resources?',
+                a: "When it comes to the benefits of IaC, it is much easier to deploy, operate, and monitor using this approach. Manually creating cloud resources can be cumbersome, and requires many different clicks, pages, all on a cluttered console page. It is much faster to create a resource from the command line, where you only need to type in the settings you desire. It is also much easier to automate deployment using this approach, as terraform can be run as a script on various platforms.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: 'GitHub Repository',
+        guide: ['Link to the GitHub repo with your Terraform code (shared with your professor).'],
+        blocks: [
+          {
+            type: 'links',
+            items: [{ label: 'github.com/alron4545/terralab', url: 'https://github.com/alron4545/terralab' }],
           },
         ],
       },

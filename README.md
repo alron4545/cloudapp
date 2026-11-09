@@ -18,7 +18,7 @@ cloud platform that runs containers.
 
 | Path           | Page        | Content                                       |
 | -------------- | ----------- | --------------------------------------------- |
-| `/`            | Home        | Park-sign card with name, ID, major, degrees  |
+| `/`            | Home        | Park-sign card with name, major, degrees      |
 | `/about`       | About Me    | Short bio and quick facts                     |
 | `/assignments` | Assignments | Cards for each class assignment               |
 | `/assignments/<slug>` | Write-up | Full write-up for one assignment        |
@@ -148,7 +148,7 @@ Google Cloud Run, etc.):
 
 ## Customizing
 
-Personal info lives in `src/data/student.js` (`student`: name, ID, major,
+Personal info lives in `src/data/student.js` (`student`: name, major,
 degrees).
 
 Assignments live in `src/data/assignments.js`. Each one has a `slug` (its URL,
@@ -184,7 +184,7 @@ To add captions, edit the `caption` fields in `src/data/photos.json`. They are
 kept the next time the script runs. Photos without a caption show the date they
 were taken.
 
-The Other page has placeholder text to replace in `src/pages/Other.jsx`.
+The Other page's hobbies, skills, and contact lists are in `src/pages/Other.jsx`.
 
 Page links work when visited directly (for example `/photos`) because
 `nginx.conf` sends unknown paths back to `index.html`.

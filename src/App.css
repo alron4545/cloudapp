@@ -1015,3 +1015,20 @@ code {
     grid-column: 2;
   }
 }
+
+.writeup__questions {
+  list-style: none;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.writeup__questions h3 {
+  margin: 0 0 0.35rem;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.writeup__q-num {
+  color: var(--sun);
+}
