@@ -48,7 +48,9 @@ text-based mark, not the official UVU logo.
 ├── index.html          # Vite entry page
 ├── photos-src/         # original photos (not in git or Docker)
 ├── scripts/
-│   └── process_photos.py
+│   ├── process_photos.py
+│   ├── auto-update.sh          # pull + rebuild when GitHub changes
+│   └── install-auto-update.sh  # cron job for auto-update.sh
 ├── package.json
 ├── vite.config.js
 ├── public/
@@ -120,6 +122,21 @@ docker compose up -d --build
 The site is on port 8080 as before. Grafana is only reachable from the server
 itself (use an SSH tunnel). Full setup, queries, alerts, and security notes are
 in [monitoring/README.md](monitoring/README.md).
+
+## Auto-update on the server
+
+`scripts/auto-update.sh` checks GitHub for new commits and, if there are any,
+runs `git pull` and `docker compose up -d --build`, then checks `/healthz`. If
+nothing changed it does nothing. To run it every 5 minutes on the EC2 instance:
+
+```bash
+scripts/install-auto-update.sh
+tail -f ~/cloudapp-auto-update.log
+```
+
+Remove it with `scripts/install-auto-update.sh --uninstall`. The server only
+reaches out to GitHub, so no ports or keys are needed. Don't edit files directly
+on the server: the script refuses to pull if the server has its own changes.
 
 ## Deploying to the cloud
 
