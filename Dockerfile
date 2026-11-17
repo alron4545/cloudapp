@@ -7,7 +7,10 @@ COPY . .
 RUN npm run build
 
 # ---- Stage 2: serve the static build with nginx ----
-FROM nginx:1.27-alpine
+FROM nginx:1.30-alpine
+# Pull in OS security patches released after the base image was built
+# (keeps the Trivy scan in CI clean).
+RUN apk upgrade --no-cache
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80

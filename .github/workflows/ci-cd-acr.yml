@@ -1,0 +1,135 @@
+# CI/CD: build -> security scan -> (only if CI passes) push to Azure Container Registry
+#
+#   CI job: checkout, build the Docker image, scan it with Trivy, save the image
+#   CD job: needs CI. Sign in to Azure with OIDC (no password stored anywhere),
+#           log in to ACR, tag the image, push it, and verify it's in the registry.
+#
+# Repository secrets used (identifiers only - there is NO client secret):
+#   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+# The Entra app (github-acr-oidc) trusts this repo's main branch through a
+# federated credential and has only the AcrPush role on the registry.
+
+name: CI/CD - Build, Scan, Push to ACR
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main] # CI only - pull requests never publish an image
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: cloudapp
+  ACR_LOGIN_SERVER: imagesfothewin-h9bvcmapdvgwh2dz.azurecr.io
+  TRIVY_VERSION: 0.58.1
+
+jobs:
+  # ===================================================================
+  # CI: can we build it, and is it safe to publish?
+  # ===================================================================
+  ci:
+    name: CI - Build and security scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build --tag "$IMAGE_NAME:${{ github.sha }}" .
+
+      - name: Security scan - full report (Trivy)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:$TRIVY_VERSION image --no-progress \
+            --severity LOW,MEDIUM,HIGH,CRITICAL \
+            "$IMAGE_NAME:${{ github.sha }}"
+
+      - name: Security gate - fail on fixable HIGH/CRITICAL (Trivy)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:$TRIVY_VERSION image --no-progress --quiet \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            "$IMAGE_NAME:${{ github.sha }}"
+
+      - name: Save image for the CD job
+        run: docker save "$IMAGE_NAME:${{ github.sha }}" | gzip > image.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar.gz
+          retention-days: 1
+
+  # ===================================================================
+  # CD: publish the exact image that CI built and scanned
+  # ===================================================================
+  cd:
+    name: CD - Push to Azure Container Registry
+    needs: ci # runs only if CI succeeded
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # lets GitHub issue the OIDC token Azure trusts
+      contents: read
+
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load image
+        run: gunzip -c image.tar.gz | docker load
+
+      - name: Azure login (OIDC, no stored password)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Exchange the Entra ID token for an ACR token and log Docker in.
+      # (Same thing `az acr login` does, but without looking the registry up
+      # in Azure, which AcrPush alone isn't allowed to do.)
+      - name: Log in to Azure Container Registry
+        run: |
+          AAD_TOKEN=$(az account get-access-token --resource https://containerregistry.azure.net --query accessToken -o tsv)
+          ACR_TOKEN=$(curl -fsS -X POST "https://$ACR_LOGIN_SERVER/oauth2/exchange" \
+            --data-urlencode "grant_type=access_token" \
+            --data-urlencode "service=$ACR_LOGIN_SERVER" \
+            --data-urlencode "access_token=$AAD_TOKEN" | jq -r .refresh_token)
+          echo "::add-mask::$ACR_TOKEN"
+          echo "ACR_TOKEN=$ACR_TOKEN" >> "$GITHUB_ENV"
+          echo "$ACR_TOKEN" | docker login "$ACR_LOGIN_SERVER" \
+            --username 00000000-0000-0000-0000-000000000000 --password-stdin
+
+      - name: Tag image
+        run: |
+          docker tag "$IMAGE_NAME:${{ github.sha }}" "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
+          docker tag "$IMAGE_NAME:${{ github.sha }}" "$ACR_LOGIN_SERVER/$IMAGE_NAME:latest"
+          docker image ls "$ACR_LOGIN_SERVER/$IMAGE_NAME"
+
+      - name: Push image
+        run: |
+          docker push "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
+          docker push "$ACR_LOGIN_SERVER/$IMAGE_NAME:latest"
+
+      - name: Verify image exists in ACR
+        run: |
+          # Ask the registry itself for the repository's tags
+          PULL_TOKEN=$(curl -fsS -X POST "https://$ACR_LOGIN_SERVER/oauth2/token" \
+            --data-urlencode "grant_type=refresh_token" \
+            --data-urlencode "service=$ACR_LOGIN_SERVER" \
+            --data-urlencode "scope=repository:$IMAGE_NAME:pull" \
+            --data-urlencode "refresh_token=$ACR_TOKEN" | jq -r .access_token)
+          echo "::add-mask::$PULL_TOKEN"
+          echo "Tags in $ACR_LOGIN_SERVER/$IMAGE_NAME:"
+          curl -fsS -H "Authorization: Bearer $PULL_TOKEN" \
+            "https://$ACR_LOGIN_SERVER/v2/$IMAGE_NAME/tags/list" | jq .
+          # And pull the manifest of the image we just pushed
+          docker buildx imagetools inspect "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
